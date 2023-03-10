@@ -75,6 +75,8 @@ public class Addreview {
 	return thank.getText();
 	
 	}
+	
+	
 	public void tearDown() {
 		ndriver.close();
 	}
