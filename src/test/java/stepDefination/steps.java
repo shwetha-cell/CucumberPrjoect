@@ -1,32 +1,39 @@
 package stepDefination;
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.cucumber.pageobjects.Addreview;
+import org.cucumber.pageobjects.Invoice;
+import org.cucumber.pageobjects.Logout;
+import org.cucumber.pageobjects.Order;
+import org.cucumber.pageobjects.Products;
+import org.cucumber.pageobjects.Register;
+import org.cucumber.pageobjects.Subscription;
+import org.cucumber.pageobjects.Testcases;
+import org.cucumber.pageobjects.Viewproducts;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.utilities.ExcelReader;
 
 import io.cucumber.java.After;
 import io.cucumber.java.Scenario;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import pageObjects.Addreview;
-import pageObjects.Order;
-import pageObjects.Invoice;
-import pageObjects.Logout;
-import pageObjects.Register;
-import pageObjects.Subscription;
-import pageObjects.Testcases;
-import pageObjects.Products;
-import pageObjects.Viewproducts;
+
+
 public class steps {
 
-	public WebDriver driver;
+   public WebDriver driver;
 	public Register rl;
 	public Logout Lg;
 	public Testcases Ts;
@@ -36,7 +43,7 @@ public class steps {
 	public Viewproducts Vp;
 	public Addreview Ar;
 	public Invoice Di;
-	public Log lg;
+	
 
 
 	@Given("User Launch chromebrowser")
@@ -45,8 +52,15 @@ public class steps {
 		String projectpath =System.getProperty("user.dir");
 		System.out.println("project path:"+projectpath);
 
-		System.setProperty("webdriver.chrome.driver", projectpath+"/src/test/resources/Drivers/chromedriver.exe");
-		driver = new ChromeDriver();
+//	System.setProperty("webdriver.gecko.driver", projectpath+"/src/test/resources/Drivers/geckodriver.exe");
+//	driver = new FirefoxDriver();
+		
+//		System.setProperty("webdriver.chrome.driver", projectpath+"/src/test/resources/Drivers/chromedriver.exe");
+//	    driver = new ChromeDriver();
+		
+		System.setProperty("webdriver.edge.driver", projectpath+"/src/test/resources/Drivers/msedgedriver.exe");
+		 driver = new EdgeDriver();
+		
 		rl = new Register(driver);
 		Lg = new Logout(driver);
 		Ts = new Testcases(driver);
@@ -65,8 +79,7 @@ public class steps {
 	@When("User Open URL {string}")
 	public void user_open_url(String url) {
 		driver.get(url);
-
-	}
+      }
 
 	@Then("Homepage title should be {string}")
 	public void homepage_title_should_be(String title) {
@@ -86,10 +99,17 @@ public class steps {
 		assertEquals(expectedSignup,actualSignup);
 	}
 
-	@When("User enter name as {string} and email as {string}")
-	public void user_enter_name_as_and_email_as(String username, String password) {
-		rl.setName(username);
-		rl.setPassword(password);
+	@When("User fills the form from given  {string} and  {int}")
+	public void user_fills_the_form_from_given_and(String sheetName, int RowNumber) throws InvalidFormatException, IOException {
+		
+		 ExcelReader reader = new ExcelReader();
+		 List<Map<String, String>> testdata = reader.getData("C:/Users/SHWETHSH/OneDrive - Capgemini/Desktop/DataForSelenium.xlsx", sheetName);
+		
+		String heading =testdata.get(RowNumber).get("Name");
+		String emails =testdata.get(RowNumber).get("Email");
+
+	rl.setName(heading, emails);
+		
 	}
 
 	@When("Click signup button")
@@ -122,18 +142,22 @@ public class steps {
 		assertEquals(actualCheckbox,expectedheckbox);
 	}
 
-	@Then("Enter personal detailes")
-	public void enter_personal_detailes() {
-		rl.firstName();
-		rl.lastName();
-		rl.companyName();
-		rl.adress1();
-		rl.states();
-		rl.cityName();
-		rl.states();
-		rl.zipode1();
-		rl.mobileNumber();
 
+@Then("user enter all the details given {string} and {int}")
+public void user_enter_all_the_details_given_and(String sheetName, Integer RowNumber) throws InvalidFormatException, IOException {
+		
+		 ExcelReader reader = new ExcelReader();
+		 List<Map<String, String>> testdata = reader.getData("C:/Users/SHWETHSH/OneDrive - Capgemini/Desktop/DataForSelenium.xlsx", sheetName);
+	
+		String fname =testdata.get(RowNumber).get("firstName");
+		String lastName =testdata.get(RowNumber).get("LastName");
+		String companyName =testdata.get(RowNumber).get("companyName");
+		String adress1 =testdata.get(RowNumber).get("adress1");
+		String states =testdata.get(RowNumber).get("states");
+		String zipcode =testdata.get(RowNumber).get("zipcode");
+		String city =testdata.get(RowNumber).get("city");
+		String mobileNumber=testdata.get(RowNumber).get("number");
+        rl.PersonalDetails(fname, lastName,companyName,adress1,states,zipcode,city,mobileNumber);
 	}
 
 	@Then("Click on create button")
@@ -181,11 +205,16 @@ public class steps {
 		assertEquals(expectedText,actualText);
 	}
 
-	@When("User enters email as {string} and password as {string}")
-	public void user_enters_email_as_and_password_as(String id, String pass) {
-		Lg.button_click();
-		Lg.emailId(id);
-		Lg.password(pass);
+
+@When("User enters email as {string} and password as {int}")
+public void user_enters_email_as_sheet_number_and_password_as(String sheetName,Integer RowNumber) throws InvalidFormatException, IOException{
+		  Lg.button_click();
+		 ExcelReader reader = new ExcelReader();
+		 List<Map<String, String>> testdata = reader.getData("C:/Users/SHWETHSH/OneDrive - Capgemini/Desktop/DataForSelenium.xlsx", sheetName);
+	
+		String usermailid =testdata.get(RowNumber).get("emailId");
+		String password =testdata.get(RowNumber).get("Password");
+		Lg.emailId(usermailid, password);
 	}
 
 	@When("cilck on Login Button")
@@ -244,20 +273,25 @@ public class steps {
 		String expectedSubscription = St.subscriptionIsDisplayed();
 		assertEquals(actualSubscription,expectedSubscription);
 	}
-	@Then("Enter email address as {string} in input and click arrow button")
-	public void enter_email_address_as_in_input_and_click_arrow_button(String mail) {
+	@Then("fill the form as {string} and {int} click arrow button")
+	public void fill_the_form_as_and_click_arrow_button(String sheetName, Integer RowNumber) throws InvalidFormatException, IOException, InterruptedException {
 
-		St.submail(mail);
+		ExcelReader reader = new ExcelReader();
+		 List<Map<String, String>> testdata = reader.getData("C:/Users/SHWETHSH/OneDrive - Capgemini/Desktop/DataForSelenium.xlsx", sheetName);
+	
+		String mailid =testdata.get(RowNumber).get("emailId");
+		St.submail(mailid);
+	    
 		St.subClick();
 
 	}
 
 	@Then("Verify success message You have been successfully subscribed is visible")
-	public void verify_success_message_you_have_been_successfully_subscribed_is_visible() {
-
+	public void verify_success_message_you_have_been_successfully_subscribed_is_visible() throws InterruptedException {
 		String actualSubscribeText ="You have been successfully subscribed!";
 		String expectedSubscribeText =St.sucessMsg();
 		assertEquals(actualSubscribeText,expectedSubscribeText);
+		
 		St.tearDown();
 
 	}
@@ -321,12 +355,18 @@ public class steps {
 	@Then("Verify Write Your Review is visible")
 	public void verify_write_your_review_is_visible() {
 
-		Ar.writeReview();
+	
 	}
 
-	@Then("Enter name, email and review")
-	public void enter_name_email_and_review() {
-		Ar.accountDetail();
+	@Then("User fill the form using given form {string} and {int}")
+	public void user_fill_the_form_using_given_form_and(String sheetName, Integer RowNumber) throws InvalidFormatException, IOException {
+		 ExcelReader reader = new ExcelReader();
+		 List<Map<String, String>> testdata = reader.getData("C:/Users/SHWETHSH/OneDrive - Capgemini/Desktop/DataForSelenium.xlsx", sheetName);
+	
+		String useName =testdata.get(RowNumber).get("UserName");
+		String mailId =testdata.get(RowNumber).get("MailId");
+		String review = testdata.get(RowNumber).get("comments");
+		Ar.accountDetail(useName, mailId,review);
 	}
 	@Then("Click Submit button")
 	public void click_submit_button() {
@@ -340,9 +380,14 @@ public class steps {
 		assertEquals(actualThankText,expectedThankText);
 		Ar.tearDown();
 	}
-	@When("User enters email as {string} and password as {string} and click on login button")
-	public void user_enters_email_as_and_password_as_and_click_on_login_button(String unme, String password) {
-		Lp.userName(unme, password);
+	@When("User enters the details  {string} and  {int} and click on login button")
+	public void user_enters_the_details_and_and_click_on_login_button(String sheetName, Integer RowNumber) throws InvalidFormatException, IOException {
+		 ExcelReader reader = new ExcelReader();
+		 List<Map<String, String>> testdata = reader.getData("C:/Users/SHWETHSH/OneDrive - Capgemini/Desktop/DataForSelenium.xlsx", sheetName);
+	
+		String email =testdata.get(RowNumber).get("emailId");
+		String password =testdata.get(RowNumber).get("Password");
+		Lp.userName(email, password);
 
 	}
 
@@ -390,18 +435,27 @@ public class steps {
 		else {
 			System.out.println("Adress and Phone number not veried ");
 		}
-
-
 	}
 
-	@Then("Enter description in comment text area and click Place Order")
-	public void enter_description_in_comment_text_area_and_click_place_order() {
-		Lp.comments();
+	@Then("Enter description in {string} and {int}  and click Place Order")
+	public void enter_description_in_and_and_click_place_order(String sheetName, Integer RowNumber) throws InvalidFormatException, IOException {
+		ExcelReader reader = new ExcelReader();
+		 List<Map<String, String>> testdata = reader.getData("C:/Users/SHWETHSH/OneDrive - Capgemini/Desktop/DataForSelenium.xlsx", sheetName);
+	
+		String useName =testdata.get(RowNumber).get("comments");
+		Lp.comments(useName);
 	}
 
-	@Then("Enter payment details: Name on Card, Card Number, CVC, Expiration date")
-	public void enter_payment_details_name_on_card_card_number_cvc_expiration_date() {
-		Lp.cardDetails();
+	@Then("Enter all card details as per the sheet {string} and {int}")
+	public void enter_all_card_details_as_per_the_sheet_and(String sheetName, Integer RowNumber) throws InvalidFormatException, IOException {
+		ExcelReader reader = new ExcelReader();
+		 List<Map<String, String>> testdata = reader.getData("C:/Users/SHWETHSH/OneDrive - Capgemini/Desktop/DataForSelenium.xlsx", sheetName);	
+		String cardName =testdata.get(RowNumber).get("cardName");
+		String cardNumber =testdata.get(RowNumber).get("Cardnumber");
+		String expereDate =testdata.get(RowNumber).get("expaireDates");
+		String cvv =testdata.get(RowNumber).get("cvv Number");
+		String expereyear =testdata.get(RowNumber).get("expaired year");
+		Lp.cardDetails(cardName, cardNumber, cardNumber, expereDate, expereyear);
 	}
 
 	@Then("Click Pay and Confirm Order button")
@@ -458,8 +512,6 @@ public class steps {
 	@When("On left side bar, click on any other brand link")
 	public void on_left_side_bar_click_on_any_other_brand_link() {
 		Vp.brandname_Link();
-
-
 	}
 
 	@Then("Verify that user is navigated to that brand page and can see products")
@@ -470,9 +522,10 @@ public class steps {
 
 	}
 	@Then("Add to cart product button and click on cart button")
-	public void add_to_cart_product_button_and_click_on_cart_button() {
-		JavascriptExecutor js2 = (JavascriptExecutor) driver;
-		js2.executeScript("window.scrollBy(0,500)", "");
+	public void add_to_cart_product_button_and_click_on_cart_button() throws InterruptedException {
+//		JavascriptExecutor js2 = (JavascriptExecutor) driver;
+//		js2.executeScript("window.scrollBy(0,500)", "");
+		Thread.sleep(3000);
 		Di.mouseHover();
 
 	}
@@ -484,15 +537,33 @@ public class steps {
 	}
 
 	@Then("Click Proceed To Checkout then click on login button")
-	public void click_proceed_to_checkout_then_click_on_login_button() {
+	public void click_proceed_to_checkout_then_click_on_login_button() throws InterruptedException {
 		Di.chechkOutproducts();
 
 	}
 
-	@Then("Fill all the details in Signup and create account of user")
-	public void fill_all_details_in_signup_and_create_account() {
-		Di.loginUser();
-		Di.userDetails();
+	@Then("user fill the details as given form {string} and {int}")
+	public void user_fill_the_details_as_given_form_and(String sheetName, Integer RowNumber) throws InvalidFormatException, IOException {
+	ExcelReader reader = new ExcelReader();
+	 List<Map<String, String>> testdata = reader.getData("C:/Users/SHWETHSH/OneDrive - Capgemini/Desktop/DataForSelenium.xlsx", sheetName);
+
+	String useName =testdata.get(RowNumber).get("UserName");
+	String mailId =testdata.get(RowNumber).get("MailId");
+	Di.loginUser(useName, mailId);
+    String password =testdata.get(RowNumber).get("Pasword");
+	String fname =testdata.get(RowNumber).get("firstName");
+	String lastName =testdata.get(RowNumber).get("LastName");
+	String companyName =testdata.get(RowNumber).get("companyNames");
+	String adress1 =testdata.get(RowNumber).get("adress1");
+	String states =testdata.get(RowNumber).get("states");
+	String zipcode =testdata.get(RowNumber).get("zipcode");
+	String city =testdata.get(RowNumber).get("city");
+	String mobileNumber=testdata.get(RowNumber).get("number");
+  
+
+	Di.userDetails(password, fname, lastName, adress1, states, city, zipcode, mobileNumber);
+
+
 	}
 
 	@Then("Verify ACCOUNT CREATED and click Continue button")
@@ -501,36 +572,43 @@ public class steps {
 		String expectedProuductText =Di.accountCreatedVerfiy();
 		assertEquals(expectedProuductText,actualProductText);
 	}
-
-	@Then("Validate Logged in as username at top of the page and click on cart button")
+    @Then("Validate Logged in as username at top of the page and click on cart button")
 	public void verify_at_top_and_click_on_cart_button() throws InterruptedException {
 
 		Di.clickOnContinue();
-		String actualName = "Shwetha";
+		String actualName = "shwetha";
 		String expectedName =Di.userName_vf();
 		assertEquals(actualName,expectedName);
 	}
-
-	@Then("Click Proceed To Checkout button")
+    @Then("Click Proceed To Checkout button")
 	public void click_proceed_to_checkout_button() throws InterruptedException {		
 		Di.cartButton();
 	}
-
 	@Then("Verify Address Details and Review Your Order")
 	public void verify_address_details_and_review_your_order() {
 		String actualCountryName ="India";
 		String expectrdCountryName =Di.adressVerfiy();
 		assertEquals(actualCountryName,expectrdCountryName);
 	}
-
 	@Then("Enter description in comment text area and click Place Order button")
 	public void enter_description_in_comment_text_area_and_click_place_order_button() {
-		Di.commentEnter();
-
+	
 	}
-	@Then("Enter user payment details Name on Card, Card Number, CVC, Expiration date")
-	public void enter_user_payment_details_name_on_card_card_number_cvc_expiration_date() {
-		Di.cardDetails();
+	@Then("Enter user enter the card details as per in the form {string} and {int}")
+	public void enter_user_enter_the_card_details_as_per_in_the_form_and(String sheetName, Integer RowNumber ) throws InvalidFormatException, IOException {
+
+		ExcelReader reader = new ExcelReader();
+		 List<Map<String, String>> testdata = reader.getData("C:/Users/SHWETHSH/OneDrive - Capgemini/Desktop/DataForSelenium.xlsx", sheetName);
+
+	
+	    String comments =testdata.get(RowNumber).get("Comments");
+		String cardName =testdata.get(RowNumber).get("cardName");
+		String cardNumber =testdata.get(RowNumber).get("Card Number");
+		String expereDate =testdata.get(RowNumber).get("expaireDates");
+		String cvv =testdata.get(RowNumber).get("cvv Number");
+		String expereyear =testdata.get(RowNumber).get("expaired year");
+		Di.cardDetails(comments, cardName, cardNumber, cardNumber, expereDate, expereyear);
+	
 	}
 
 	@Then("Verify success message Your order has been placed successfully is displayed")
@@ -548,7 +626,6 @@ public class steps {
 
 		Di.deleteButton();;
 	}
-
 	@Then("Verify ACCOUNT DELETED and click Continue button")
 	public void verify_account_deleted_and_click_continue_button() {
 		String actualDeleteText = "Your account has been permanently deleted!" ;
@@ -556,22 +633,18 @@ public class steps {
 		assertEquals(actualDeleteText, expectedDeleteText);
 		Di.tearDown();
 	}
-
-	//TO TAKE SCREENSHOT//
+      //TO TAKE SCREENSHOT//
 	@After(order = 1)
 	public void takeScreenShot(Scenario scenario) {
 		if(scenario.isFailed()) {
 			TakesScreenshot ts = (TakesScreenshot) driver;
 			byte[] src = ts.getScreenshotAs(OutputType.BYTES);
 			scenario.attach(src, "image/png", "screenshot");
-
-		}
-	}
-
-
+	    	}
+	     }
 	@After(order = 0)
 	public void tearDown() {
-		driver.quit();
+	driver.quit();	
 	}
 
 }
